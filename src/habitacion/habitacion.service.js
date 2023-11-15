@@ -97,13 +97,14 @@ const habitacionService = {
         return res.status(400).json({ error: 'Se requieren fechas de inicio y fin' });
       }
 
-      const tipoHabitacion = determineTipoHabitacion(personas);
+      const whereClause = {
+        habilitado: true
+      }
+      ubicacion ? whereClause['ubicacion'] = ubicacion : '';
+      personas ? whereClause['tipo_habitacion'] = determineTipoHabitacion(personas) : ''
+
       const availableHabitaciones = await Habitacion.findAll({
-        where: {
-          habilitado: true,
-          tipo_habitacion: tipoHabitacion,
-          ubicacion: ubicacion || undefined,
-        },
+        where: whereClause,
         include: [
           {
             model: Reserva,
@@ -130,17 +131,14 @@ const habitacionService = {
           },
         ],
         having: {
-          '$Reservas.id$': null,
+          '$reservas.reserva_id$': null,
         },
       });
-
+      let message = ''
       if (availableHabitaciones.length === 0) {
-        const message = personas > 1
-          ? 'Es posible que necesite más de una habitación.'
-          : 'No hay habitaciones disponibles para las fechas y criterios proporcionados.';
+        message ='No hay habitaciones disponibles para las fechas y criterios proporcionados.'
         return res.json({ message });
       }
-
       res.json(availableHabitaciones);
     } catch (error) {
       console.error(error);

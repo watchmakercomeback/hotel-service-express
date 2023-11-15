@@ -44,7 +44,6 @@ const Reserva = sequelize.define('Reserva', {
   }
 });
 
-Reserva.belongsTo(Habitacion, { foreignKey: 'habitacion_id' });
 Reserva.belongsTo(Agente, { foreignKey: 'agente_id' });
 Reserva.belongsTo(Pasajero, { foreignKey: 'pasajero_id' })
 
