@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Pasajero</title>
+</head>
+<body>
+
+  <h2>Create Pasajero</h2>
+
+  <form id="pasajeroForm">
+    <label for="nombresApellidos">Nombres y Apellidos:</label>
+    <input type="text" id="nombresApellidos" name="nombres_apellidos" required>
+
+    <label for="fechaNacimiento">Fecha de Nacimiento:</label>
+    <input type="date" id="fechaNacimiento" name="fecha_nacimiento" required>
+
+    <label for="genero">Género:</label>
+    <input type="text" id="genero" name="genero" required>
+
+    <label for="tipoDocumento">Tipo de Documento:</label>
+    <input type="text" id="tipoDocumento" name="tipo_documento" required>
+
+    <label for="numeroDocumento">Número de Documento:</label>
+    <input type="text" id="numeroDocumento" name="numero_documento" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="telefonoContacto">Teléfono de Contacto:</label>
+    <input type="tel" id="telefonoContacto" name="telefono_contacto">
+
+    <button type="submit">Create Pasajero</button>
+  </form>
+
+  <script>
+    document.getElementById('pasajeroForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const formData = new FormData(this);
+      const pasajeroData = {};
+      formData.forEach((value, key) => {
+        pasajeroData[key] = value;
+      });
+
+      try {
+        const response = await fetch('http://localhost:8000/api/pasajero', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(pasajeroData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+
+        const newPasajero = await response.json();
+        console.log('New Pasajero:', newPasajero);
+      } catch (error) {
+        console.error('Error creating Pasajero:', error.message);
+      }
+    });
+  </script>
+
+</body>
+</html>
