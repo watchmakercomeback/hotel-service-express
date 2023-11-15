@@ -1,5 +1,6 @@
 const Habitacion = require('./habitacion.model'); 
-const Hotel = require('../hotel/hotel.model'); 
+const Reserva = require('../reservas/reservas.model'); 
+const { Op } = require('sequelize');
 
 const habitacionService = {
   getAllHabitacionesByHotel: async (req, res) => {
@@ -86,8 +87,78 @@ const habitacionService = {
       console.error(error);
       res.status(500).json({ error: 'Error al modificar el estado de la habitación' });
     }
-  }
+  },
 
+  getAvailableHabitaciones: async (req, res) => {
+    try {
+      const { fechaInicio, fechaFin, personas, ubicacion } = req.body;
+
+      if (!fechaInicio || !fechaFin) {
+        return res.status(400).json({ error: 'Se requieren fechas de inicio y fin' });
+      }
+
+      const tipoHabitacion = determineTipoHabitacion(personas);
+      const availableHabitaciones = await Habitacion.findAll({
+        where: {
+          habilitado: true,
+          tipo_habitacion: tipoHabitacion,
+          ubicacion: ubicacion || undefined,
+        },
+        include: [
+          {
+            model: Reserva,
+            where: {
+              [Op.or]: [
+                {
+                  fecha_inicio: {
+                    [Op.gte]: new Date(fechaFin),
+                  },
+                  fecha_fin: {
+                    [Op.gte]: new Date(fechaFin),
+                  },
+                },
+                {
+                  fecha_inicio: {
+                    [Op.lte]: new Date(fechaInicio),
+                  },
+                  fecha_fin: {
+                    [Op.lte]: new Date(fechaInicio),
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        having: {
+          '$Reservas.id$': null,
+        },
+      });
+
+      if (availableHabitaciones.length === 0) {
+        const message = personas > 1
+          ? 'Es posible que necesite más de una habitación.'
+          : 'No hay habitaciones disponibles para las fechas y criterios proporcionados.';
+        return res.json({ message });
+      }
+
+      res.json(availableHabitaciones);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener habitaciones disponibles' });
+    }
+  },
 };
+
+function determineTipoHabitacion(personas) {
+  if (personas === 1) {
+    return 'Individual';
+  } else if (personas === 2) {
+    return 'Doble';
+  } else if (personas >= 3 && personas <= 5) {
+    return 'Familiar';
+  } else {
+    return { [Op.not]: null };
+  }
+}
 
 module.exports = habitacionService;

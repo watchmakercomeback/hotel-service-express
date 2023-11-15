@@ -12,4 +12,6 @@ router.put('/hoteles/:hotelId/habitaciones/:habitacionId', habitacionService.mod
 
 router.patch('/hoteles/:hotelId/habitaciones/:habitacionId/habilitar-deshabilitar', habitacionService.habilitarDeshabilitarHabitacion);
 
+router.post('/habitaciones/habitaciones-disponibles', habitacionService.getAvailableHabitaciones);
+
 module.exports = router;

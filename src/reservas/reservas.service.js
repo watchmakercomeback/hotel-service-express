@@ -41,6 +41,14 @@ const reservaService = {
                 fecha_fin,
                 estado,
             });
+            const habitacion = await Habitacion.findByPk(habitacion_id);
+            console.log("STOP 1", habitacion)
+            if (!habitacion || !habitacion.habilitado) {
+                return res.status(400).json({ error: 'La habitación no está disponible' });
+            }
+            if (habitacion) {
+                await habitacion.update({ habilitado: false });
+            }
             await nuevaReserva.reload({
                 include: [Habitacion, Agente, Pasajero],
             });

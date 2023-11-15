@@ -28,7 +28,6 @@ const pasajeroService = {
       if (!pasajero) {
         throw new Error('Pasajero not found');
       }
-      // Add input validations here if needed
       return await pasajero.update(data);
     } catch (error) {
       throw new Error(`Error updating pasajero: ${error.message}`);
